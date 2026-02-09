@@ -1,0 +1,7 @@
+{{ WRAPPER }}
+
+~ WRAPPER comp = BLOCK
+Here p {{ $comp }}
+
+~ BLOCK
+# I am block
