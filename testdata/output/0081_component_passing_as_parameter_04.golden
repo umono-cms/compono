@@ -1,0 +1,1 @@
+<p>NULL and UNDEFINED aren&#39;t reserved keyword for Compono.<br>Default value must SCREAMING_SNAKE_CASE.</p><compono-error-block><div slot="title">Unknown component</div><div slot="description">The component <strong>UNDEFINED</strong> is not defined or not registered.</div></compono-error-block>

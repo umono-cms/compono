@@ -1,0 +1,6 @@
+{{ COMP_WRAPPER }}
+
+~ COMP_WRAPPER component = UNDEFINED
+NULL and UNDEFINED aren't reserved keyword for Compono.
+Default value must SCREAMING_SNAKE_CASE.
+{{ $component }}

@@ -1,0 +1,1 @@
+<compono-error-block><div slot="title">Infinite component call</div><div slot="description">The call to component <strong>COMP</strong> creates an infinite loop and was skipped.</div></compono-error-block>

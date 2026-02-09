@@ -1,0 +1,14 @@
+{{ PROFILE_WRAPPER }} {{ PROFILE_WRAPPER profile-component = PROFILE_TYPE_3 name = "John Doe" }}
+
+~ PROFILE_WRAPPER profile-component = PROFILE_TYPE_1 name = "Jane Doe" email="example@example.com"
+{{ $profile-component name = $name email = $email }}
+
+~ PROFILE_TYPE_1 name = "" email = ""
+**{{ name }}** ({{ email }})
+
+~ PROFILE_TYPE_2 name = "" email = ""
+{{ email }} - {{ name }}
+
+~ PROFILE_TYPE_3 name = "" email = ""
+# {{ name }}
+## {{ email }}
