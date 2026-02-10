@@ -1,0 +1,4 @@
+{{ COMP }}
+
+~ COMP param = "I am a string parameter"
+{{ $param }}

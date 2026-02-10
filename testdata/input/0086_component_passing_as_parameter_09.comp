@@ -1,0 +1,7 @@
+{{ MESSAGE_WRAPPER message-component = MESSAGE message = "message test" }}
+
+~ MESSAGE message = ""
+*{{ message }}*
+
+~ MESSAGE_WRAPPER message-component = MC message = ""
+Your message: {{ $message-component message = $message}}

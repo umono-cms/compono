@@ -1,0 +1,13 @@
+{{ DEFAULT_TEMPLATE comp = HOME }}
+{{ DEFAULT_TEMPLATE comp = ABOUT }}
+
+~ DEFAULT_TEMPLATE comp = EMPTY
+{{ HEADER }}
+{{ $comp }}
+{{ FOOTER }}
+
+~ HOME
+I am home page
+
+~ ABOUT
+I am about page

@@ -44,6 +44,7 @@ func (sc *strongContent) Selectors() []selector.Selector {
 func (_ *strongContent) Rules() []Rule {
 	return []Rule{
 		newInlineCompCall(),
+		newInlineParamCompCall(),
 		newParamRef(),
 		newPlain(),
 	}

@@ -1,0 +1,4 @@
+{{ COMP comp = COMP }}
+
+~ COMP comp = NULL
+{{ $comp }}
