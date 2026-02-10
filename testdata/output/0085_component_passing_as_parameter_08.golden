@@ -1,1 +1,1 @@
-<p><compono-error-inline><span slot="title">Not component parameter</span><span slot="description">The parameter <strong>comp</strong> is not component parameter</span></compono-error-inline></p>
+<p><compono-error-inline><span slot="title">Not component parameter</span><span slot="description">The parameter <strong>param</strong> is not component parameter</span></compono-error-inline></p>

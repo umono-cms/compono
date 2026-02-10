@@ -120,6 +120,7 @@ func (_ *pContent) Rules() []Rule {
 		newStrong(),
 		newEm(),
 		newInlineCompCall(),
+		newInlineParamCompCall(),
 		newParamRef(),
 		newSoftBreak(),
 		newPlain(),

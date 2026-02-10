@@ -113,7 +113,7 @@ func (_ *compParams) Name() string {
 
 func (_ *compParams) Selectors() []selector.Selector {
 	se, _ := selector.NewStartEnd(`.`, `.`)
-	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false)`)
+	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)(?:[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|[A-Z0-9]+(?:_[A-Z0-9]+)*))?`)
 	return []selector.Selector{
 		selector.NewBounds(se, p),
 	}
@@ -137,7 +137,7 @@ func (_ *compParam) Name() string {
 }
 
 func (_ *compParam) Selectors() []selector.Selector {
-	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false)`)
+	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)(?:[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|[A-Z0-9]+(?:_[A-Z0-9]+)*))?`)
 	return []selector.Selector{
 		p,
 	}
@@ -165,6 +165,7 @@ func (_ *compParamName) Selectors() []selector.Selector {
 	seli, _ := selector.NewStartEndLeftInner(`([a-z][a-z0-9-]*)\s*`, `=`)
 	return []selector.Selector{
 		seli,
+		selector.NewAll(),
 	}
 }
 
@@ -184,7 +185,7 @@ func (_ *compParamType) Name() string {
 }
 
 func (_ *compParamType) Selectors() []selector.Selector {
-	p, _ := selector.NewPattern(`[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false)`)
+	p, _ := selector.NewPattern(`[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|[A-Z0-9]+(?:_[A-Z0-9]+)*)`)
 	return []selector.Selector{
 		p,
 	}
@@ -195,6 +196,7 @@ func (_ *compParamType) Rules() []Rule {
 		newCompStringParam(),
 		newCompNumberParam(),
 		newCompBoolParam(),
+		newCompCompParam(),
 	}
 }
 
@@ -269,6 +271,30 @@ func (_ *compBoolParam) Rules() []Rule {
 	}
 }
 
+// Component's component parameter (SCREAMING_CASE default)
+type compCompParam struct{}
+
+func newCompCompParam() Rule {
+	return &compCompParam{}
+}
+
+func (_ *compCompParam) Name() string {
+	return "comp-comp-param"
+}
+
+func (_ *compCompParam) Selectors() []selector.Selector {
+	p, _ := selector.NewPattern(`[A-Z0-9]+(?:_[A-Z0-9]+)*`)
+	return []selector.Selector{
+		p,
+	}
+}
+
+func (_ *compCompParam) Rules() []Rule {
+	return []Rule{
+		newCompParamDefaValue(),
+	}
+}
+
 // Component parameter default value
 type compParamDefaValue struct{}
 
@@ -318,6 +344,7 @@ func (_ *localCompDefContent) Rules() []Rule {
 		newH2(),
 		newH1(),
 		newBlockCompCall(),
+		newBlockParamCompCall(),
 		newP(),
 	}
 }
@@ -510,7 +537,7 @@ func (_ *compCallArgs) Name() string {
 }
 
 func (_ *compCallArgs) Selectors() []selector.Selector {
-	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|\$[a-z][a-z0-9-]*)`)
+	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|\$[a-z][a-z0-9-]*|[A-Z0-9]+(?:_[A-Z0-9]+)*)`)
 	return []selector.Selector{
 		selector.NewFilter(p, func(source []byte, index [][2]int) [][2]int {
 			if len(index) == 0 {
@@ -552,7 +579,7 @@ func (_ *compCallArg) Name() string {
 }
 
 func (_ *compCallArg) Selectors() []selector.Selector {
-	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|\$[a-z][a-z0-9-]*)`)
+	p, _ := selector.NewPattern(`([a-z][a-z0-9-]*)[\s\n\r]*=[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|\$[a-z][a-z0-9-]*|[A-Z0-9]+(?:_[A-Z0-9]+)*)`)
 	return []selector.Selector{
 		p,
 	}
@@ -599,7 +626,7 @@ func (_ *compCallArgType) Name() string {
 }
 
 func (_ *compCallArgType) Selectors() []selector.Selector {
-	p, _ := selector.NewPattern(`[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|\$[a-z][a-z0-9-]*)`)
+	p, _ := selector.NewPattern(`[\s\n\r]*(".*?"|\d+(?:\.\d+)?|true|false|\$[a-z][a-z0-9-]*|[A-Z0-9]+(?:_[A-Z0-9]+)*)`)
 	return []selector.Selector{
 		p,
 	}
@@ -611,6 +638,7 @@ func (_ *compCallArgType) Rules() []Rule {
 		newCompCallNumberArg(),
 		newCompCallBoolArg(),
 		newCompCallParamArg(),
+		newCompCallCompArg(),
 	}
 }
 
@@ -725,6 +753,154 @@ func (_ *compCallArgValue) Selectors() []selector.Selector {
 }
 
 func (_ *compCallArgValue) Rules() []Rule {
+	return []Rule{}
+}
+
+// Component call's component argument (SCREAMING_CASE)
+type compCallCompArg struct{}
+
+func newCompCallCompArg() Rule {
+	return &compCallCompArg{}
+}
+
+func (_ *compCallCompArg) Name() string {
+	return "comp-call-comp-arg"
+}
+
+func (_ *compCallCompArg) Selectors() []selector.Selector {
+	p, _ := selector.NewPattern(`[A-Z0-9]+(?:_[A-Z0-9]+)*`)
+	return []selector.Selector{
+		p,
+	}
+}
+
+func (_ *compCallCompArg) Rules() []Rule {
+	return []Rule{
+		newCompCallArgValue(),
+	}
+}
+
+// Param component call (base)
+type paramCompCall struct{}
+
+func newParamCompCall() Rule {
+	return &paramCompCall{}
+}
+
+func (_ *paramCompCall) Name() string {
+	return "param-comp-call"
+}
+
+func (_ *paramCompCall) Selectors() []selector.Selector {
+	se, _ := selector.NewStartEnd(`\{\{\s*\$[a-z][a-z0-9-]*`, `\s*\}\}`)
+	return []selector.Selector{
+		se,
+	}
+}
+
+func (_ *paramCompCall) Rules() []Rule {
+	return []Rule{
+		newParamCompCallName(),
+		newCompCallArgs(),
+	}
+}
+
+// Block param component call
+type blockParamCompCall struct {
+	*paramCompCall
+}
+
+func newBlockParamCompCall() Rule {
+	pcc := newParamCompCall()
+	return &blockParamCompCall{
+		paramCompCall: pcc.(*paramCompCall),
+	}
+}
+
+func (_ *blockParamCompCall) Name() string {
+	return "block-param-comp-call"
+}
+
+func (_ *blockParamCompCall) Selectors() []selector.Selector {
+	se, _ := selector.NewStartEnd(`\{\{\s*\$[a-z][a-z0-9-]*`, `\s*\}\}`)
+	return []selector.Selector{
+		selector.NewFilter(se, func(source []byte, index [][2]int) [][2]int {
+			if len(index) == 0 {
+				return [][2]int{}
+			}
+
+			filtered := [][2]int{}
+
+			for _, ind := range index {
+				start, end := ind[0], ind[1]
+
+				leftOK := true
+				for i := start - 1; i >= 0 && source[i] != '\n'; i-- {
+					if source[i] != ' ' && source[i] != '\t' {
+						leftOK = false
+						break
+					}
+				}
+
+				rightOK := true
+				for i := end; i < len(source) && source[i] != '\n'; i++ {
+					if source[i] != ' ' && source[i] != '\t' {
+						rightOK = false
+						break
+					}
+				}
+
+				insideOK := true
+				re := regexp.MustCompile(`}}`)
+				closingInd := re.FindAllStringIndex(string(source[ind[0]:ind[1]]), -1)
+				if len(closingInd) > 1 {
+					insideOK = false
+				}
+
+				if leftOK && rightOK && insideOK {
+					filtered = append(filtered, ind)
+				}
+			}
+
+			return filtered
+		}),
+	}
+}
+
+// Inline param component call
+type inlineParamCompCall struct {
+	*paramCompCall
+}
+
+func newInlineParamCompCall() Rule {
+	pcc := newParamCompCall()
+	return &inlineParamCompCall{
+		paramCompCall: pcc.(*paramCompCall),
+	}
+}
+
+func (_ *inlineParamCompCall) Name() string {
+	return "inline-param-comp-call"
+}
+
+// Param component call name
+type paramCompCallName struct{}
+
+func newParamCompCallName() Rule {
+	return &paramCompCallName{}
+}
+
+func (_ *paramCompCallName) Name() string {
+	return "param-comp-call-name"
+}
+
+func (_ *paramCompCallName) Selectors() []selector.Selector {
+	return []selector.Selector{
+		selector.NewStartEndInner(`\{\{\s*\$`, `\s+|\s*\}\}`),
+	}
+}
+
+func (_ *paramCompCallName) Rules() []Rule {
 	return []Rule{}
 }
 
@@ -843,6 +1019,7 @@ func (_ *globalCompDefContent) Rules() []Rule {
 		newH2(),
 		newH1(),
 		newBlockCompCall(),
+		newBlockParamCompCall(),
 		newP(),
 	}
 }
