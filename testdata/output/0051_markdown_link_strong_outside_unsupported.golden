@@ -1,1 +1,1 @@
-<p>**<a href="https://umono.io">click me</a>**</p>
+<p>**<compono-link><a href="https://umono.io">click me</a></compono-link>**</p>

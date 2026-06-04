@@ -1,1 +1,1 @@
-<p><a href="https://google.com">Google</a> and <a href="https://github.com">GitHub</a> are popular.</p>
+<p><compono-link><a href="https://google.com">Google</a></compono-link> and <compono-link><a href="https://github.com">GitHub</a></compono-link> are popular.</p>

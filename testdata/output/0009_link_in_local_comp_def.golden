@@ -1,1 +1,1 @@
-<a href="https://umono.io" target="_blank" rel="noopener noreferrer">click me!</a>
+<compono-link><a href="https://umono.io" target="_blank" rel="noopener noreferrer">click me!</a></compono-link>
