@@ -1,1 +1,1 @@
-<p>Check out <a href="https://umono.io">Umono</a> for more info.</p>
+<p>Check out <compono-link><a href="https://umono.io">Umono</a></compono-link> for more info.</p>
