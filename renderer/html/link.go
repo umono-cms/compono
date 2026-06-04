@@ -41,7 +41,7 @@ func (l *linkElement) Render() string {
 		url = html.EscapeString(strings.TrimSpace(string(linkURL.Raw())))
 	}
 
-	return `<a href="` + url + `">` + text + `</a>`
+	return `<compono-link><a href="` + url + `">` + text + `</a></compono-link>`
 }
 
 type linkTextElement struct {

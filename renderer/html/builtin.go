@@ -37,7 +37,7 @@ func (l *link) Render(invoker renderableNode, node ast.Node) string {
 	if ok && newTab {
 		newTabStr = ` target="_blank" rel="noopener noreferrer"`
 	}
-	return "<a href=\"" + getArgValueWithDefa(l.renderer, invoker, node, "url", "url") + "\"" + newTabStr + ">" + getArgValueWithDefa(l.renderer, invoker, node, "text", "") + "</a>"
+	return "<compono-link><a href=\"" + getArgValueWithDefa(l.renderer, invoker, node, "url", "url") + "\"" + newTabStr + ">" + getArgValueWithDefa(l.renderer, invoker, node, "text", "") + "</a></compono-link>"
 }
 
 func getArgValueWithDefa(r *renderer, invoker renderableNode, compCall ast.Node, name string, defa string) string {
