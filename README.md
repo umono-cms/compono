@@ -156,7 +156,7 @@ Creates an anchor element with optional target blank:
 
 Output:
 ```html
-<a href="https://example.com" target="_blank" rel="noopener noreferrer">Visit us</a>
+<compono-link><a href="https://example.com" target="_blank" rel="noopener noreferrer">Visit us</a></compono-link>
 ```
 
 ### IMAGE
