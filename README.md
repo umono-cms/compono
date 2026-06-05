@@ -644,6 +644,80 @@ Error placement depends on how `context(...)` is used:
 - using it in an inline component call renders an inline error at the call site
 - default values are resolved lazily, so no error is produced unless that parameter is actually used
 
+## Renderer Hooks
+
+Renderer hooks let an application inspect or replace the HTML output produced by the renderer for supported rendered units. They are registered per conversion with `compono.WithRendererHook`.
+
+Hooks run after the renderer creates the default output for a markdown element or built-in component. The string returned by the hook becomes the output for that unit. When multiple hooks are registered, they run in registration order and each hook receives the output returned by the previous hook.
+
+```go
+import (
+    "bytes"
+    "strings"
+
+    "github.com/umono-cms/compono"
+    "github.com/umono-cms/compono/renderer/hook"
+)
+
+c := compono.New()
+
+markdownHook := func(ctx hook.RendererHookContext) string {
+    if ctx.Kind == hook.KindMarkdown && ctx.Name == "h1" {
+        return strings.Replace(ctx.Output, "<h1>", `<h1 class="page-title">`, 1)
+    }
+    return ctx.Output
+}
+
+builtinHook := func(ctx hook.RendererHookContext) string {
+    if ctx.Kind == hook.KindBuiltin && ctx.Name == "LINK" {
+        if url, ok := ctx.Params.String("url"); ok && strings.HasPrefix(url, "https://example.com") {
+            return strings.Replace(ctx.Output, "<compono-link>", `<compono-link data-internal="true">`, 1)
+        }
+    }
+    return ctx.Output
+}
+
+var buf bytes.Buffer
+err := c.Convert(
+    []byte("# Hello\n\n{{ LINK text=\"Visit\" url=\"https://example.com\" }}"),
+    &buf,
+    compono.WithRendererHook(markdownHook),
+    compono.WithRendererHook(builtinHook),
+)
+```
+
+### Hook Context
+
+Every hook receives a `hook.RendererHookContext`:
+
+- `Kind`: where the output came from. `hook.KindMarkdown` is used for markdown elements, and `hook.KindBuiltin` is used for built-in components.
+- `Name`: the rendered element or component name. Markdown names include `h1`, `h2`, `h3`, `h4`, `h5`, `h6`, `p`, `em`, `strong`, `link`, `inline-code`, and `code-block`. Built-in names use the component name, such as `LINK`, `IMAGE`, `WEB_GRID`, or `NAVIGATION`.
+- `Params`: raw resolved data for that rendered unit. Markdown elements expose values such as `content`, `text`, `url`, and `lang`. Built-in components expose successfully resolved arguments and defaults, including values coming from `context(key)`.
+- `Output`: the current HTML output. Returning `ctx.Output` leaves it unchanged; returning another string replaces it.
+
+`Params` is a `hook.Params` map of `hook.ParamValue`. Values can be read as strings, arrays, or records:
+
+```go
+imageHook := func(ctx hook.RendererHookContext) string {
+    if ctx.Kind != hook.KindBuiltin || ctx.Name != "IMAGE" {
+        return ctx.Output
+    }
+
+    media, ok := ctx.Params.Record("media")
+    if !ok {
+        return ctx.Output
+    }
+
+    mimeType, _ := media.String("mime-type")
+    if mimeType == "image/avif" {
+        return strings.Replace(ctx.Output, "<compono-image>", `<compono-image data-modern="true">`, 1)
+    }
+    return ctx.Output
+}
+```
+
+Hook params are intentionally raw. For example, markdown link `text` and `url`, markdown `content`, and built-in arguments are provided before hook-level escaping or sanitizing. If a hook returns newly constructed HTML, that HTML is the responsibility of the application using the hook.
+
 ## Error Handling
 
 Compono provides error feedback by rendering placeholders where errors occur.
@@ -672,6 +746,11 @@ err := c.Convert(source, writer, compono.WithGlobalComponent(name, globalSource)
 // Inject convert-time context values
 err := c.Convert(source, writer, compono.WithContext(map[string]any{
     "app/version": "1.2.0",
+}))
+
+// Register a renderer hook for a single conversion
+err := c.Convert(source, writer, compono.WithRendererHook(func(ctx hook.RendererHookContext) string {
+    return ctx.Output
 }))
 ```
 

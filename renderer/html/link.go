@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/umono-cms/compono/ast"
+	"github.com/umono-cms/compono/renderer/hook"
 )
 
 type linkElement struct {
@@ -41,7 +42,19 @@ func (l *linkElement) Render() string {
 		url = html.EscapeString(strings.TrimSpace(string(linkURL.Raw())))
 	}
 
-	return `<compono-link><a href="` + url + `">` + text + `</a></compono-link>`
+	output := `<compono-link><a href="` + url + `">` + text + `</a></compono-link>`
+
+	params := hook.Params{}
+	if linkText != nil {
+		raw := strings.TrimSpace(string(linkText.Raw()))
+		params["text"] = hook.NewString(raw)
+	}
+	if linkURL != nil {
+		raw := strings.TrimSpace(string(linkURL.Raw()))
+		params["url"] = hook.NewString(raw)
+	}
+
+	return l.renderer.applyHooks(output, hook.KindMarkdown, "link", params)
 }
 
 type linkTextElement struct {
