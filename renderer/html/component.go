@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/umono-cms/compono/ast"
+	"github.com/umono-cms/compono/renderer/hook"
 )
 
 type compCall struct {
@@ -67,7 +68,9 @@ func (cc *compCall) Render() string {
 
 	builtinComp := cc.renderer.findBuiltinComp(string(compCallName.Raw()))
 	if builtinComp != nil {
-		return builtinComp.Render(cc, cc.Node())
+		output := builtinComp.Render(cc, cc.Node())
+		builtinParams := cc.renderer.extractBuiltinParams(cc, cc.Node())
+		return cc.renderer.applyHooks(output, hook.KindBuiltin, strings.TrimSpace(string(compCallName.Raw())), builtinParams)
 	}
 
 	return ""

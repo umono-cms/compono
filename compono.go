@@ -114,6 +114,10 @@ func (c *compono) Convert(source []byte, writer io.Writer, opts ...ConvertOption
 
 	c.errorWrapper.Wrap(root)
 
+	if hs, ok := c.renderer.(renderer.HookSetter); ok {
+		hs.SetRendererHooks(cfg.rendererHooks)
+	}
+
 	err = c.renderer.Render(writer, root)
 	if err != nil {
 		return NewComponoError(ErrRender, err.Error())

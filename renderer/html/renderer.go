@@ -6,6 +6,7 @@ import (
 
 	"github.com/umono-cms/compono/ast"
 	"github.com/umono-cms/compono/logger"
+	"github.com/umono-cms/compono/renderer/hook"
 )
 
 type renderer struct {
@@ -13,6 +14,7 @@ type renderer struct {
 	renderableNodes []renderableNode
 	root            ast.Node
 	builtinCompMap  map[string]builtinComponent
+	hooks           []hook.RendererHookFunc
 }
 
 func NewRenderer(log logger.Logger) *renderer {
@@ -119,4 +121,83 @@ func (r *renderer) findBuiltinComp(name string) builtinComponent {
 
 func (r *renderer) findBuiltinCompDef(name string) ast.Node {
 	return ast.FindBuiltinCompDef(r.root, name)
+}
+
+func (r *renderer) SetRendererHooks(hooks []hook.RendererHookFunc) {
+	r.hooks = hooks
+}
+
+func (r *renderer) applyHooks(output string, kind hook.Kind, name string, params hook.Params) string {
+	if len(r.hooks) == 0 {
+		return output
+	}
+	ctx := hook.RendererHookContext{
+		Kind:   kind,
+		Name:   name,
+		Params: params,
+		Output: output,
+	}
+	for _, h := range r.hooks {
+		ctx.Output = h(ctx)
+	}
+	return ctx.Output
+}
+
+func (r *renderer) extractBuiltinParams(invoker renderableNode, compCall ast.Node) hook.Params {
+	params := hook.Params{}
+
+	compCallName := ast.FindNodeByRuleName(compCall.Children(), "comp-call-name")
+	if compCallName == nil {
+		return params
+	}
+	name := strings.TrimSpace(string(compCallName.Raw()))
+
+	compDef := ast.FindBuiltinCompDef(r.root, name)
+	if compDef == nil {
+		return params
+	}
+
+	for _, compParam := range ast.GetCompParamsFromCompDef(compDef) {
+		paramName := ast.GetParamNameFromCompParam(compParam)
+		if paramName == "" {
+			continue
+		}
+		resolved := ast.ResolveParamDefaultFromCompCall(r.root, compCall, paramName)
+		if !resolved.IsZero() && resolved.MissingContextKey == "" {
+			params[paramName] = resolvedValueToHookParam(resolved)
+		}
+	}
+
+	for _, arg := range ast.GetCompCallArgsFromCompCall(compCall) {
+		argName := ast.GetArgNameFromCompCallArg(arg)
+		if argName == "" {
+			continue
+		}
+		resolved := ast.ResolveCompCallArgValue(r.root, arg, getAncestorsByInvoker(invoker), compCall)
+		if resolved.IsZero() || resolved.MissingContextKey != "" {
+			continue
+		}
+		params[argName] = resolvedValueToHookParam(resolved)
+	}
+
+	return params
+}
+
+func resolvedValueToHookParam(value ast.ResolvedValue) hook.ParamValue {
+	switch value.Type {
+	case "array":
+		items := make([]hook.ParamValue, 0, len(value.Items))
+		for _, item := range value.Items {
+			items = append(items, resolvedValueToHookParam(item))
+		}
+		return hook.NewArray(items)
+	case "record":
+		fields := make(map[string]hook.ParamValue, len(value.Fields))
+		for key, field := range value.Fields {
+			fields[key] = resolvedValueToHookParam(field)
+		}
+		return hook.NewRecord(fields)
+	default:
+		return hook.NewString(strings.TrimSpace(value.Raw))
+	}
 }

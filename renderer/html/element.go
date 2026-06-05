@@ -1,10 +1,12 @@
 package html
 
 import (
+	"html"
 	"regexp"
 	"strings"
 
 	"github.com/umono-cms/compono/ast"
+	"github.com/umono-cms/compono/renderer/hook"
 )
 
 type nonVoidElement struct {
@@ -84,34 +86,34 @@ func (nvec *nonVoidElementContent) Render() string {
 	}
 
 	tag := name[:idx]
+	rendered := normalizeRenderedMarkup(nvec.renderer.renderChildren(nvec, nvec.Node().Children()))
+	params := hook.Params{"content": hook.NewString(html.UnescapeString(rendered))}
 
 	if tag == "p" {
-		rendered := normalizeRenderedMarkup(nvec.renderer.renderChildren(nvec, nvec.Node().Children()))
 		if ast.FindNodeByRuleName(nvec.Node().Children(), "soft-break") != nil &&
 			containsBlockLikeParagraphChild(nvec) {
-			return renderParagraphWithBlockLikeChildren(nvec)
+			return nvec.renderer.applyHooks(renderParagraphWithBlockLikeChildren(nvec), hook.KindMarkdown, tag, params)
 		}
 		if ast.FindNodeByRuleName(nvec.Node().Children(), "soft-break") != nil &&
 			strings.Contains(rendered, "<compono-error-block>") {
-			return splitParagraphByBreakWithBlockErr(rendered)
+			return nvec.renderer.applyHooks(splitParagraphByBreakWithBlockErr(rendered), hook.KindMarkdown, tag, params)
 		}
 
 		if standaloneParamRef := standaloneCompParamRefInParagraph(nvec.Node()); standaloneParamRef != nil {
 			if isBlockLikeRendered(rendered) || strings.HasPrefix(rendered, "<compono-error-block>") {
-				return rendered
+				return nvec.renderer.applyHooks(rendered, hook.KindMarkdown, tag, params)
 			}
 		}
 		if ast.FindNodeByRuleName(nvec.Node().Children(), "block-error") != nil {
-			return renderParagraphWithBlockErrors(nvec)
+			return nvec.renderer.applyHooks(renderParagraphWithBlockErrors(nvec), hook.KindMarkdown, tag, params)
 		}
-		return "<p>" + rendered + "</p>"
+		return nvec.renderer.applyHooks("<p>"+rendered+"</p>", hook.KindMarkdown, tag, params)
 	}
 
-	rendered := normalizeRenderedMarkup(nvec.renderer.renderChildren(nvec, nvec.Node().Children()))
 	if strings.HasPrefix(rendered, "<compono-error-block>") {
-		return rendered
+		return nvec.renderer.applyHooks(rendered, hook.KindMarkdown, tag, params)
 	}
-	return "<" + tag + ">" + rendered + "</" + tag + ">"
+	return nvec.renderer.applyHooks("<"+tag+">"+rendered+"</"+tag+">", hook.KindMarkdown, tag, params)
 }
 
 func containsBlockLikeParagraphChild(nvec *nonVoidElementContent) bool {
