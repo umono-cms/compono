@@ -290,6 +290,8 @@ When validation fails, Compono renders an error placeholder instead of silently 
 
 ### WEB_GRID
 
+> **Deprecated:** `WEB_GRID` is deprecated and will be removed in v1. Compono will now only carry semantic content. Built-in components that tell the presentation layer what to do will no longer be added to Compono.
+
 Creates a web grid wrapper from component items and grid template definitions:
 
 ```

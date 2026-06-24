@@ -49,6 +49,9 @@ func BuiltinComponents() []Definition {
 			},
 			InlineRenderable: true,
 		},
+		// Deprecated: WEB_GRID is deprecated and will be removed in v1.
+		// Compono will now only carry semantic content. Built-in components
+		// that tell the presentation layer what to do will no longer be added to Compono.
 		{
 			Name: "WEB_GRID",
 			Params: []Param{
