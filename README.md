@@ -1194,6 +1194,7 @@ These errors belong to the language itself, not to a built-in or a Markdown elem
 | `invalid-context-access` | An index on a context value that is not an array, or a key on one that is not a record | `The context value **[key]** is not an array and cannot be indexed.` or `The context value **[key]** is not a record and cannot be accessed by key.` |
 | `invalid-expression` | A `{{ }}` unit follows no grammar ([Invalid and Unclosed Units](#invalid-and-unclosed-units)) | `The content between **{{** and **}}** must be a component call, a parameter reference or a context reference.` |
 | `unclosed-expression` | A `{{` has no matching `}}` | `This **{{** has no matching **}}**.` |
+| `invalid-value` | The source given to [`ParseValue`](#value-parsing) is not a string, integer, bool, array or record | `The value must be a string, integer, bool, array or record.` |
 
 - When the same error occurs for several names in one part, one diagnostic is returned and the message is plural, such as `The components **A**, **B** are not defined.`
 - An error of a value that comes from a parameter has an `invalid-parameter-*` code, and one that comes from `context(key)` has an `invalid-context-*` code.
@@ -1258,6 +1259,24 @@ A source that starts with a parameter line (`~ title = ""`) is analyzed as a glo
 - `Diagnostics`: the errors that do not depend on values, in the whole source, also in locals that are never called. An invalid parameter definition is reported at the definition, and also at every call to it. Since no globals and no context are given, `unknown-component` and `unknown-key` are not reported. `Source` and `Calls` are empty.
 
 Ranges are in the format of diagnostic ranges, relative to the source, with leading and trailing whitespace left out. Every list is in source order, and the same source always gives the same `Analysis`. `Builtins` and `MarkdownElements` return a new slice on every call.
+
+### Value Parsing
+
+`ParseValue` parses the source of a value, written as the value of an argument, and returns it as a Go value that `WithContext` accepts. It lets an application keep values that its users write in Compono's syntax and give them as context.
+
+```go
+value, diagnostics := compono.ParseValue([]byte(`[ { text: "Home", url: "/" } ]`))
+// value: []any{map[string]any{"text": "Home", "url": "/"}}
+
+_, err := c.Convert(page, w, compono.WithContext(map[string]any{"site/menu": value}))
+```
+
+- The syntax is the syntax of an argument value: a string (with the `""` escape), an integer, a bool, an array or a record ([Supported Types](#supported-types)). Leading and trailing spaces, tabs and line breaks are ignored.
+- Only plain values. A component (a name or `NO_MATTER`), a parameter reference and `context(...)` are `invalid-value` errors, at the top and nested.
+- The Go types are `string`, `int`, `bool`, `[]any` and `map[string]any`.
+- Giving the result to `WithContext` renders the same output and the same diagnostics as writing the source as an argument.
+- Errors are diagnostics. A grammar error has the code it has in an argument value (`invalid-expression` and others), and a source that is not a value is `invalid-value`. Ranges are relative to the given source. When there are diagnostics the value is `nil`.
+- It is a package-level function and can be called from several goroutines at once.
 
 ## Component Naming Convention
 
