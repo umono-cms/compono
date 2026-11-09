@@ -53,6 +53,13 @@ func InvalidCurrentValueError(value string) (title, message string) {
 	return "Invalid current value", "The value **" + value + "** is not allowed for the parameter **current**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**, **__auto**."
 }
 
+// InvalidCurrentResolverValueError returns the error of a LINK whose current
+// is "__auto" and whose current resolver returned a value that is not allowed.
+// value is the trimmed value and url is the url given to the resolver.
+func InvalidCurrentResolverValueError(value, url string) (title, message string) {
+	return "Invalid current value", "The current resolver returned **" + value + "** for the URL **" + url + "**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**."
+}
+
 // DisallowedURLSchemeError returns the error of a LINK or IMAGE argument
 // or a markdown link URL whose scheme is not http, https, mailto or tel.
 func DisallowedURLSchemeError(scheme string) (title, message string) {
