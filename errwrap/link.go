@@ -5,8 +5,13 @@ import (
 	"github.com/umono-cms/compono/util"
 )
 
-// linkCurrentValues are the values allowed for the LINK "current" parameter.
-var linkCurrentValues = []string{"page", "step", "location", "date", "time", "true"}
+// linkCurrentHTMLValues are the values of current that are written to
+// aria-current.
+var linkCurrentHTMLValues = []string{"page", "step", "location", "date", "time", "true"}
+
+// linkCurrentValues are the values allowed for the LINK "current" parameter
+// in the source.
+var linkCurrentValues = append(append([]string{}, linkCurrentHTMLValues...), "__auto")
 
 // linkValueError returns the error of a call to the LINK built-in whose
 // parameters resolved to values.
@@ -30,10 +35,22 @@ func linkValueError(root, call ast.Node, invokerAncestors []ast.Node) (title, me
 
 	current = util.TrimWhitespace(current)
 	if current != "" && !util.InSliceString(current, linkCurrentValues) {
-		return "Invalid current value", "The value **" + current + "** is not allowed for the parameter **current**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**.", true
+		title, message := InvalidCurrentValueError(current)
+		return title, message, true
 	}
 
 	return "", "", false
+}
+
+// LinkCurrentHTMLValue reports whether value may be written to aria-current.
+func LinkCurrentHTMLValue(value string) bool {
+	return util.InSliceString(value, linkCurrentHTMLValues)
+}
+
+// InvalidCurrentValueError returns the error of a LINK whose current is not
+// allowed. value is the trimmed value.
+func InvalidCurrentValueError(value string) (title, message string) {
+	return "Invalid current value", "The value **" + value + "** is not allowed for the parameter **current**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**, **__auto**."
 }
 
 // DisallowedURLSchemeError returns the error of a LINK or IMAGE argument

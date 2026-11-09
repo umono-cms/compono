@@ -36,6 +36,7 @@ const (
 	ErrAttributeConflict
 	ErrDuplicateGlobalComponent
 	ErrURLReporterAlreadySet
+	ErrCurrentResolverAlreadySet
 )
 
 type Compono interface {
@@ -110,8 +111,9 @@ func (c *compono) Convert(source []byte, writer io.Writer, opts ...ConvertOption
 	c.errorWrapper.Wrap(root)
 
 	rendered, err := c.renderer.Render(writer, root, renderer.Options{
-		AttributeHook: cfg.attributeHook,
-		URLReporter:   cfg.urlReporter,
+		AttributeHook:   cfg.attributeHook,
+		URLReporter:     cfg.urlReporter,
+		CurrentResolver: cfg.currentResolver,
 	})
 	if err != nil {
 		switch {

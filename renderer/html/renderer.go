@@ -12,8 +12,9 @@ import (
 
 // Options holds the settings of a single Render call.
 type Options struct {
-	AttributeHook attrhook.AttributeHookFunc
-	URLReporter   urlreport.URLReporterFunc
+	AttributeHook   attrhook.AttributeHookFunc
+	URLReporter     urlreport.URLReporterFunc
+	CurrentResolver func(url string) string
 }
 
 type renderer struct {
@@ -22,6 +23,7 @@ type renderer struct {
 	root            ast.Node
 	builtinCompMap  map[string]builtinComponent
 	attributeHook   attributeHookFunc
+	currentResolver func(url string) string
 	frameStack      []frame
 	rendering       []renderingFrame
 	callNodes       []ast.Node
@@ -95,6 +97,7 @@ func (r *renderer) Render(writer io.Writer, root ast.Node, opts Options) ([]Diag
 	cr := NewRenderer(logger.Scoped(r.logger))
 	cr.root = root
 	cr.attributeHook = opts.AttributeHook
+	cr.currentResolver = opts.CurrentResolver
 
 	out := cr.render(root)
 	if cr.attrErr != nil {

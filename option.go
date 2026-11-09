@@ -25,13 +25,15 @@ type globalComponentNode struct {
 }
 
 type convertConfig struct {
-	globalComponents []*globalComponentNode
-	contextValues    map[string]any
-	isolatedScope    bool
-	attributeHook    AttributeHookFunc
-	attributeHookSet bool
-	urlReporter      URLReporterFunc
-	urlReporterSet   bool
+	globalComponents   []*globalComponentNode
+	contextValues      map[string]any
+	isolatedScope      bool
+	attributeHook      AttributeHookFunc
+	attributeHookSet   bool
+	urlReporter        URLReporterFunc
+	urlReporterSet     bool
+	currentResolver    CurrentResolverFunc
+	currentResolverSet bool
 }
 
 type globalComponentOption struct {
@@ -43,8 +45,9 @@ type globalComponentOption struct {
 // WithGlobalComponent returns a ConvertOption that injects a global component
 // for a single conversion. The name must be SCREAMING_SNAKE_CASE. Sub-options
 // may include nested WithGlobalComponent calls (which become sub-components of
-// this global) and WithIsolatedScope. WithContext, WithAttributeHook and
-// WithURLReporter are not permitted inside a global component at any depth.
+// this global) and WithIsolatedScope. WithContext, WithAttributeHook,
+// WithURLReporter and WithCurrentResolver are not permitted inside a global
+// component at any depth.
 func WithGlobalComponent(name string, source []byte, opts ...ConvertOption) ConvertOption {
 	return &globalComponentOption{
 		name:   name,
@@ -65,7 +68,7 @@ func (o *globalComponentOption) applyConvert(c *compono, cfg *convertConfig) err
 			continue
 		}
 		if isConversionOption(opt) {
-			return NewComponoError(ErrConversionOptionInGlobal, fmt.Sprintf("conversion option not allowed inside global component %q: WithContext, WithAttributeHook and WithURLReporter are forbidden in global scope", o.name))
+			return NewComponoError(ErrConversionOptionInGlobal, fmt.Sprintf("conversion option not allowed inside global component %q: WithContext, WithAttributeHook, WithURLReporter and WithCurrentResolver are forbidden in global scope", o.name))
 		}
 		if err := opt.applyConvert(c, subCfg); err != nil {
 			return err
@@ -90,7 +93,7 @@ func (o *globalComponentOption) applyConvert(c *compono, cfg *convertConfig) err
 
 func isConversionOption(opt ConvertOption) bool {
 	switch opt.(type) {
-	case *contextOption, *attributeHookOption, *urlReporterOption:
+	case *contextOption, *attributeHookOption, *urlReporterOption, *currentResolverOption:
 		return true
 	default:
 		return false
