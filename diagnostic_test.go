@@ -42,6 +42,7 @@ var diagnosticCodeTitles = []struct {
 	{CodeInvalidParameterUsage, "Invalid parameter usage"},
 	{CodeInvalidTableDelimiter, "Invalid table delimiter"},
 	{CodeInvalidTableRow, "Invalid table row"},
+	{CodeInvalidValue, "Invalid value"},
 	{CodeInvalidVariantURL, "Invalid variant URL"},
 	{CodeMissingArgument, "Missing argument"},
 	{CodeNotComponentParameter, "Not component parameter"},
