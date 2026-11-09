@@ -39,6 +39,7 @@ const (
 	CodeInvalidParameterUsage      DiagnosticCode = "invalid-parameter-usage"
 	CodeInvalidTableDelimiter      DiagnosticCode = "invalid-table-delimiter"
 	CodeInvalidTableRow            DiagnosticCode = "invalid-table-row"
+	CodeInvalidValue               DiagnosticCode = "invalid-value"
 	CodeInvalidVariantURL          DiagnosticCode = "invalid-variant-url"
 	CodeMissingArgument            DiagnosticCode = "missing-argument"
 	CodeNotComponentParameter      DiagnosticCode = "not-component-parameter"
