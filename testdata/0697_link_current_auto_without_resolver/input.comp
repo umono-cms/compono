@@ -1,0 +1,5 @@
+Önce {{ LINK text = "a" url = "/a" current = "__auto" }} sonra
+
+{{ LINK text = "b" url = "/b" current = " __auto " }}
+{{ LINK text = "c" url = "/c" current = "__page" }}
+{{ LINK text = "d" url = "/d" current = "__Auto" }}

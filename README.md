@@ -311,7 +311,7 @@ A global component without sub components resolves exactly as before: `Local > G
 
 **Errors:** `Convert` returns an error when:
 
-- a conversion option (`WithContext`, `WithAttributeHook`, `WithURLReporter`) is given to a global component at any depth, even with an empty value (`ErrConversionOptionInGlobal`),
+- a conversion option (`WithContext`, `WithAttributeHook`, `WithURLReporter`, `WithCurrentResolver`) is given to a global component at any depth, even with an empty value (`ErrConversionOptionInGlobal`),
 - `WithIsolatedScope` is given directly to `Convert` (`ErrIsolatedScopeInConvert`),
 - two sub components of the same owner share a name (`ErrDuplicateSubComponent`),
 - two global components given to `Convert` directly share a name (`ErrDuplicateGlobalComponent`).
@@ -336,7 +336,7 @@ Output:
 | `text`    | String | Yes      |         | The visible text. It is trimmed and cannot be empty (`empty-text`). |
 | `url`     | String | Yes      |         | The `href`. It cannot be empty (`empty-url`) and must pass the URL scheme allowlist. |
 | `new-tab` | Bool   | No       | `false` | Writes `target="_blank" rel="noopener noreferrer"`. |
-| `current` | String | No       | `""`    | Writes `aria-current` when it is not empty. One of `page`, `step`, `location`, `date`, `time` or `true`, otherwise `invalid-current-value`. |
+| `current` | String | No       | `""`    | Writes `aria-current` when it is not empty. One of `page`, `step`, `location`, `date`, `time` or `true`, or the directive `__auto` ([Automatic current](#automatic-current)), otherwise `invalid-current-value`. |
 
 ```
 {{ LINK text = "Home" url = "/" current = "page" }}
@@ -348,6 +348,23 @@ Output:
 ```
 
 A missing `text` or `url` is an `invalid-built-in-arguments` error. The attributes are written in the order `href`, `target`, `rel`, `aria-current`.
+
+#### Automatic current
+
+A value of `current` that starts with `__` is a directive of Compono and is never written to the HTML as it is. The only directive is `__auto`; any other value that starts with `__` is `invalid-current-value`. The rule is only for `current`: in other parameters and in text, `__` is plain content.
+
+With `current = "__auto"`, the application decides the value through [`WithCurrentResolver`](#current-resolver). This marks the active page in a menu that is the same value on every page:
+
+```
+{{ LIST items = context(site/menu) item = MENU_ITEM }}
+
+~ MENU_ITEM item = {}
+{{ LINK text = item.text url = item.url current = item.current }}
+```
+
+With `site/menu` as `[{ text: "Home", url: "/", current: "__auto" }, { text: "Blog", url: "/blog", current: "__auto" }]` and a resolver that returns `"page"` for `/blog`, only the second link gets `aria-current="page"`. The output of a link the resolver matches is the same as with `current = "page"`, and the output of one it does not match is the same as with `current = ""`.
+
+Without a resolver, `__auto` is empty: no `aria-current` is written and there is no error. `__auto` may be written directly or come from a parameter, a record or `context(...)`.
 
 #### URL Scheme Allowlist
 
@@ -1104,6 +1121,26 @@ _, err := c.Convert(pageSource, w,
 - The URLs of a dropped call are not reported.
 - `WithURLReporter` may be given once per conversion (`ErrURLReporterAlreadySet`) and not to a global component (`ErrConversionOptionInGlobal`). A `nil` reporter is the same as no reporter. If `Convert` returns an error, the reported URLs should not be used.
 
+## Current Resolver
+
+`compono.WithCurrentResolver` registers a function that decides the `current` of every `LINK` whose `current` is `__auto` ([Automatic current](#automatic-current)). It receives the URL of the link and returns the value of `current`.
+
+```go
+_, err := c.Convert(pageSource, w,
+	compono.WithCurrentResolver(func(url string) string {
+		if url == "/blog" {
+			return "page"
+		}
+		return ""
+	}),
+)
+```
+
+- The URL is the value written to `href`: after the [URL scheme allowlist](#url-scheme-allowlist) normalization and before HTML escaping. Compono does not compare or normalize URLs further; the policy is the application's.
+- The returned value is handled as if it were written to `current`: it is trimmed, an empty value writes no `aria-current`, and a value other than `page`, `step`, `location`, `date`, `time` or `true` is `invalid-current-value` and drops the link. The function returns a string, not a bool, so that an application can mark a section with `"true"`.
+- It is called only for links whose `current` is `__auto`, once per rendered link, in render order and synchronously during `Convert`. It is not called for a link that an error drops.
+- `WithCurrentResolver` may be given once per conversion (`ErrCurrentResolverAlreadySet`) and not to a global component (`ErrConversionOptionInGlobal`). A `nil` resolver is the same as no resolver. The same source, the same options and the same results of the resolver always give the same output.
+
 ## Error Handling
 
 There are two kinds of errors:
@@ -1232,6 +1269,9 @@ _, err := c.Convert(source, writer, compono.WithAttributeHook(func(builtin strin
 
 // Receive the image URLs written to the output (once per conversion)
 _, err := c.Convert(source, writer, compono.WithURLReporter(func(r compono.URLReport) {}))
+
+// Decide the current of the links whose current is "__auto" (once per conversion)
+_, err := c.Convert(source, writer, compono.WithCurrentResolver(func(url string) string { return "" }))
 ```
 
 ### Concurrency
