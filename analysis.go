@@ -21,6 +21,9 @@ type Analysis struct {
 	Elements []Element
 	// Root holds the units of the root, local definitions excluded.
 	Root []Unit
+	// Directives are the directives given as literals to built-in
+	// parameters, in source order, those in locals included.
+	Directives []Directive
 	// Diagnostics are the errors that do not depend on values, those in
 	// uncalled locals included. Source and Calls are empty.
 	Diagnostics []Diagnostic
@@ -119,6 +122,7 @@ func Analyze(source []byte) (Analysis, error) {
 		Elements: analysisElements(source, top),
 		Root:     analysisRoot(source, top, refNodes),
 	}
+	analysis.Directives = analysisDirectives(refs, refNodes)
 	if head := ast.FindNodeByRuleName(top.Children(), "global-comp-def-head"); head != nil {
 		analysis.Params = analysisParams(source, ast.FindNodeByRuleName(head.Children(), "comp-params"))
 		if analysis.Params == nil {
