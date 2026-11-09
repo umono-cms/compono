@@ -1137,7 +1137,7 @@ _, err := c.Convert(pageSource, w,
 ```
 
 - The URL is the value written to `href`: after the [URL scheme allowlist](#url-scheme-allowlist) normalization and before HTML escaping. Compono does not compare or normalize URLs further; the policy is the application's.
-- The returned value is handled as if it were written to `current`: it is trimmed, an empty value writes no `aria-current`, and a value other than `page`, `step`, `location`, `date`, `time` or `true` is `invalid-current-value` and drops the link. The function returns a string, not a bool, so that an application can mark a section with `"true"`.
+- The returned value is handled as if it were written to `current`: it is trimmed, an empty value writes no `aria-current`, and a value other than `page`, `step`, `location`, `date`, `time` or `true` is `invalid-current-value` and drops the link. The message of that diagnostic names the resolver and the URL, so that it is not mistaken for an invalid value in the source: `The current resolver returned **[value]** for the URL **[url]**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**.` The function returns a string, not a bool, so that an application can mark a section with `"true"`.
 - It is called only for links whose `current` is `__auto`, once per rendered link, in render order and synchronously during `Convert`. It is not called for a link that an error drops.
 - `WithCurrentResolver` may be given once per conversion (`ErrCurrentResolverAlreadySet`) and not to a global component (`ErrConversionOptionInGlobal`). A `nil` resolver is the same as no resolver. The same source, the same options and the same results of the resolver always give the same output.
 
