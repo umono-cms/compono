@@ -48,9 +48,10 @@ func (l *link) Render(invoker renderableNode, node ast.Node) string {
 		current = ""
 		if l.renderer.currentResolver != nil {
 			url, _ := getRawArgValue(l.renderer, invoker, node, "url")
-			current = util.TrimWhitespace(l.renderer.currentResolver(util.NormalizeURL(url)))
+			normalizedURL := util.NormalizeURL(url)
+			current = util.TrimWhitespace(l.renderer.currentResolver(normalizedURL))
 			if current != "" && !errwrap.LinkCurrentHTMLValue(current) {
-				title, message := errwrap.InvalidCurrentValueError(current)
+				title, message := errwrap.InvalidCurrentResolverValueError(current, normalizedURL)
 				return l.renderer.recordDiagnostic(node, title, message, isBlockBuiltinCall(l.renderer, node))
 			}
 		}

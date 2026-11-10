@@ -13,6 +13,12 @@ const invalidCurrentValuePrefix = "The value **"
 
 const invalidCurrentValueSuffix = "** is not allowed for the parameter **current**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**, **__auto**."
 
+const resolverValuePrefix = "The current resolver returned **"
+
+const resolverValueMiddle = "** for the URL **"
+
+const resolverValueSuffix = "**. Allowed values: **page**, **step**, **location**, **date**, **time**, **true**."
+
 // convertWithResolver converts source and returns the output, the diagnostics
 // and the urls the resolver was asked about, in order.
 func convertWithResolver(t *testing.T, source string, resolve func(url string) string, opts ...ConvertOption) (string, []Diagnostic, []string) {
@@ -81,7 +87,7 @@ func TestCurrentAutoInvalidResolverValueDropsLink(t *testing.T) {
 			assert.Equal(t, `<p>Önce  sonra</p>`, out)
 			require.Len(t, diags, 1)
 			assert.Equal(t, CodeInvalidCurrentValue, diags[0].Code)
-			assert.Equal(t, invalidCurrentValuePrefix+value+invalidCurrentValueSuffix, diags[0].Message)
+			assert.Equal(t, resolverValuePrefix+value+resolverValueMiddle+"/a"+resolverValueSuffix, diags[0].Message)
 			assert.Equal(t, span(t, source, `{{ LINK text = "a" url = "/a" current = "__auto" }}`, 0), diags[0].Range)
 		})
 	}
@@ -93,6 +99,16 @@ func TestCurrentAutoInvalidResolverValueDropsBlockLink(t *testing.T) {
 	assert.Equal(t, `<p>sonra</p>`, out)
 	require.Len(t, diags, 1)
 	assert.Equal(t, CodeInvalidCurrentValue, diags[0].Code)
+	assert.Equal(t, resolverValuePrefix+"Page"+resolverValueMiddle+"/a"+resolverValueSuffix, diags[0].Message)
+}
+
+func TestCurrentAutoInvalidResolverValueMessageHasHrefURL(t *testing.T) {
+	source := `{{ LINK text = "a" url = "  /x?a=1&b=2  " current = "__auto" }}`
+	_, diags, urls := convertWithResolver(t, source, func(string) string { return " Page " })
+	require.Len(t, diags, 1)
+	assert.Equal(t, CodeInvalidCurrentValue, diags[0].Code)
+	assert.Equal(t, resolverValuePrefix+"Page"+resolverValueMiddle+"/x?a=1&b=2"+resolverValueSuffix, diags[0].Message)
+	assert.Equal(t, []string{"/x?a=1&b=2"}, urls)
 }
 
 func TestCurrentAutoInvalidResolverValueSkipsAttributeHook(t *testing.T) {
