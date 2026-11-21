@@ -6,7 +6,7 @@ Thanks for your interest in Compono. Please read this page before you put time i
 
 - **Built for Umono.** Compono is developed for [Umono](https://github.com/umono-cms/umono) and follows Umono's roadmap.
 - **One developer.** Compono is developed by Yunus Emre Bulut alone. There is no team.
-- **The process is private.** Decisions, specs and planning live in a private document. What is public is the code, the README, the issues and the discussions.
+- **The process is private.** Decisions, specs and planning live in a private document. What is public is the code, the README, [docs.umono.dev](https://docs.umono.dev), the issues and the discussions.
 - **Built with AI.** The code is written by AI agents. The design, the decisions and the review are the developer's.
 
 ## How you can help
