@@ -25,6 +25,12 @@ Compono is currently in active development. **Only the latest minor release rece
 | **Latest Minor Release (Current)** | ✅ Supported |
 | **Older Versions** | ❌ Not Supported (Please upgrade) |
 
+## Dependency Scanning
+
+Known vulnerabilities in Compono's dependencies and in the Go standard library are scanned with [`govulncheck`](https://go.dev/doc/security/vuln/) four times a day, on both `main` and the latest release. The same scan runs on every pull request and every push to `main`, and fails if a vulnerability affects the code.
+
+A vulnerability in a dependency affects Compono when its code calls the vulnerable function. A release that requires the fixed version of the dependency is published within **24 hours** after that version is released. A vulnerability in the Go standard library is fixed by the Go version of the application that uses Compono, not by a Compono release: keep Go up to date.
+
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability in Compono, I appreciate your help in disclosing it to me in a responsible manner.
