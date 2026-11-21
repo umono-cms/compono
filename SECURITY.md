@@ -14,7 +14,7 @@ What an application adds to the output through Compono's API, such as the attrib
 
 ## Security Fixes and the HTML Output
 
-While Umono is in 0.x, fixes that change Compono's HTML output wait for Umono v1 (see [CONTRIBUTING.md](CONTRIBUTING.md#html-output-bugs)). Security fixes do not wait, even when they change the output. If the correct output was already specified before the vulnerability was found, the fix is released as a patch version. Otherwise, the fix specifies new output and is released as a minor version.
+While Umono is in 0.x, fixes that change Compono's HTML output wait for Umono v1 (see [CONTRIBUTING.md](CONTRIBUTING.md#html-output-bugs)). Security fixes do not wait: they are released as a patch or a minor version even when they change the output.
 
 ## Supported Versions
 
